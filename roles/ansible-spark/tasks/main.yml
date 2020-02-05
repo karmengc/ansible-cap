@@ -12,22 +12,33 @@
       - "/tmp/scala-{{ scala_version }}.rpm"
     state: present
 
+
+    #- name: Create Spark user
+    #  user:
+    #    name: "{{ spark_user }}"
+    #    password: "{{ spark_user_password | password_hash('sha512') }}"
+    #    system: yes
+    #    state: present
+    #    generate_ssh_key: true
+    #    groups: "{{ spark_user_groups }}"
+
 - name: Set JAVA HOME
   lineinfile:
     dest: "/home/{{ spark_user }}/.bashrc"
-    line: "export JAVA_HOME=$(dirname $(dirname $(readlink $(readlink $(which javac)))))"
+    line: "export JAVA_HOME=$(dirname $(dirname $(readlink $(readlink $(which java)))))"
     owner: "{{ spark_user }}"
     group: "{{ spark_user }}"
     insertafter: 'EOF'
     create: yes
     state: present
 
-- name: Create Spark user
-  user:
-    name: "{{ spark_user }}"
-    system: yes
-    state: present
-    groups: "{{ spark_user_groups }}"
+- name: Set etc_hosts
+  blockinfile:
+    path: "/etc/hosts"
+    insertafter: EOF
+    block: |
+      {{ spark_master_ip }} master
+      {{ spark_worker_ip }} worker
 
 - name: Ensure Spark install dir exists
   file:
@@ -67,9 +78,16 @@
 
 - include: authorize_keys.yml
 
+- name: Check if Spark is already runnning
+  shell: pidof java
+  ignore_errors: yes
+  register: spark_running
+
+- debug: var=spark_running.rc
+
 - name: Launch start script at Master
   command: "sh {{ spark_install_dir }}/spark-{{ spark_version }}/sbin/start-all.sh"
-  when: ansible_hostname == "master"
+  when: ansible_hostname == "master" and spark_running.rc == 1
 
 - include: spark-log4j.yml
 

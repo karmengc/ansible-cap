@@ -1,5 +1,5 @@
 ---
-- name: Prepare
+- name: Prepare all
   hosts: all
   gather_facts: false
   become: true
@@ -8,9 +8,50 @@
       raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
       become: true
       changed_when: false
-      # Required by tomcat-native
-    - name: Install epel-release
-      yum:
-        name: epel-release
+
+- name: Prepare master
+  hosts: master
+  gather_facts: false
+  vars_files:
+    - spark_conf.yml
+  become: true
+  tasks:
+    - name: Create master server user
+      user:
+        name: "{{ spark_master_user }}"
+        password: "{{ spark_master_user_pwd | password_hash('sha512') }}"
+        system: yes
         state: present
-        update_cache: true
+        generate_ssh_key: true
+        groups: "{{ spark_user_groups }}"
+    - name: Ssh copy id from master to worker
+      shell: |
+        SSHPASS={{ spark_worker_user_pwd }} sshpass -e scp ~/.ssh/id_rsa.pub {{ spark_worker_user }}@{{ spark_worker_ip }}:/home/{{ spark_worker_user }}/
+        SSHPASS={{ spark_worker_user_pwd }} sshpass -e ssh {{ spark_worker_user }}@{{ spark_worker_ip }} 'cat id_rsa.pub > .ssh/authorized_keys'
+      become: yes
+      become_user: "{{ spark_master_user }}"
+      ignore_errors: true
+
+- name: Prepare worker
+  hosts: worker
+  gather_facts: false
+  vars_files:
+    - spark_conf.yml
+  become: true
+  tasks:
+    - name: Create worker server user
+      user:
+        name: "{{ spark_worker_user }}"
+        password: "{{ spark_worker_user_pwd | password_hash('sha512') }}"
+        system: yes
+        state: present
+        generate_ssh_key: true
+        groups: "{{ spark_user_groups }}"
+    - name: Ssh copy id from worker to master
+      shell: |
+        SSHPASS={{ spark_master_user_pwd }} sshpass -e scp ~/.ssh/id_rsa.pub {{ spark_master_user }}@{{ spark_master_ip }}:/home/{{ spark_master_user }}/
+        SSHPASS={{ spark_master_user_pwd }} sshpass -e ssh {{ spark_master_user }}@{{ spark_master_ip }} 'cat id_rsa.pub > .ssh/authorized_keys'
+      become: yes
+      become_user: "{{ spark_worker_user }}"
+      ignore_errors: true
+

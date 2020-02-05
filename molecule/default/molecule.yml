@@ -11,13 +11,13 @@ platforms:
   - name: master
     box: centos77
     instance_raw_config_args:
-      - "vm.network 'private_network', ip: '10.0.2.4'"
-    memory: 2048
+      - "vm.network 'private_network', ip: '192.168.130.148'"
+    memory: 1024
   - name: worker
     box: centos77
     instance_raw_config_args:
-      - "vm.network 'private_network', ip: '10.0.2.5'"
-    memory: 4096
+      - "vm.network 'private_network', ip: '192.168.130.150'"
+    memory: 1024
 provisioner:
   name: ansible
   config_options:
