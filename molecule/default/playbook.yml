@@ -1,0 +1,21 @@
+---
+- name: Set master
+  hosts: master
+  vars_files:
+    - spark_conf.yml
+  become: true
+  gather_facts: true
+  roles:
+    - role: ansible-spark
+      spark_user: "{{ spark_master_user }}"
+
+- name: Set worker
+  hosts: worker
+  vars_files:
+    - spark_conf.yml
+  become: true
+  gather_facts: true
+  roles:
+    - role: ansible-spark
+      spark_user: "{{ spark_worker_user }}"
+

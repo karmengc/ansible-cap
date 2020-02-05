@@ -1,0 +1,31 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: vagrant
+  provider:
+    name: virtualbox
+lint:
+  name: yamllint
+platforms:
+  - name: master
+    box: centos77
+    instance_raw_config_args:
+      - "vm.network 'private_network', ip: '10.0.2.4'"
+    memory: 2048
+  - name: worker
+    box: centos77
+    instance_raw_config_args:
+      - "vm.network 'private_network', ip: '10.0.2.5'"
+    memory: 4096
+provisioner:
+  name: ansible
+  config_options:
+    ssh_connection:
+      pipelining: true
+  lint:
+    name: ansible-lint
+verifier:
+  name: testinfra
+  lint:
+    name: flake8

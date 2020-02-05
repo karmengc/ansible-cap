@@ -1,0 +1,11 @@
+---
+
+spark_master_ip: "10.0.2.4"
+spark_master_user: "usuariomaster"
+
+spark_worker_ip: "10.0.2.5"
+spark_worker_user: "usuarioworker"
+spark_worker_cores: 1
+spark_worker_memory: 1
+spark_slaves: ["10.0.2.5"]
+

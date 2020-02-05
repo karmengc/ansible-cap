@@ -1,0 +1,77 @@
+---
+
+- name: Download Scala package
+  get_url:
+    url: "{{ scala_mirror }}/scala-{{ scala_version }}.rpm"
+    dest: "/tmp/scala-{{ scala_version }}.rpm"
+
+- name: Install Java and Scala packages
+  yum:
+    name:
+      - java
+      - "/tmp/scala-{{ scala_version }}.rpm"
+    state: present
+
+- name: Set JAVA HOME
+  lineinfile:
+    dest: "/home/{{ spark_user }}/.bashrc"
+    line: "export JAVA_HOME=$(dirname $(dirname $(readlink $(readlink $(which javac)))))"
+    owner: "{{ spark_user }}"
+    group: "{{ spark_user }}"
+    insertafter: 'EOF'
+    create: yes
+    state: present
+
+- name: Create Spark user
+  user:
+    name: "{{ spark_user }}"
+    system: yes
+    state: present
+    groups: "{{ spark_user_groups }}"
+
+- name: Ensure Spark install dir exists
+  file:
+    path: "{{ spark_install_dir }}"
+    mode: 0755
+    state: directory
+    follow: true
+    owner: "{{ spark_user }}"
+    group: "{{ spark_user }}"
+
+- name: Download Spark
+  get_url:
+    url: "{{ spark_mirror }}/spark-{{ spark_version }}.tgz"
+    dest: "/tmp/spark-{{ spark_version }}.tgz"
+
+- name: Extract Spark
+  unarchive:
+    src: "/tmp/spark-{{ spark_version }}.tgz"
+    dest: "{{ spark_install_dir }}"
+    copy: no
+    creates: "{{ spark_install_dir }}/spark-{{ spark_version }}"
+
+- name: Configure Spark environment
+  template:
+    src: spark-env.sh.j2
+    dest: "{{ spark_install_dir }}/spark-{{ spark_version }}/conf/spark-env.sh"
+
+    #- name: Configure Spark defaults config file
+    #  template:
+    #    src: spark-defaults.conf.j2
+    #    dest: "{{ spark_usr_parent_dir }}/spark-{{ spark_version }}/conf/spark-defaults.conf"
+
+- name: Configure slaves config file
+  template:
+    src: slaves.j2
+    dest: "{{ spark_install_dir }}/spark-{{ spark_version }}/conf/slaves"
+
+- include: authorize_keys.yml
+
+- name: Launch start script at Master
+  command: "sh {{ spark_install_dir }}/spark-{{ spark_version }}/sbin/start-all.sh"
+  when: ansible_hostname == "master"
+
+- include: spark-log4j.yml
+
+
+# vim: ff=unix:ai:et:sw=2:ts=2:

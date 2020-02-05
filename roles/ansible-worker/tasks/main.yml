@@ -1,0 +1,38 @@
+---
+
+# - debug: var=hostvars[inventory_hostname]
+
+- include_tasks: tasks/setup_host.yml
+  tags:
+    - setup
+
+- include_tasks: cron_fap_clean_tmp.yml
+
+  #- include_tasks: tasks/archive_logs.yml
+  #  when: archive_logs
+
+- include_tasks: tasks/setup_tomcat.yml
+  tags:
+    - setup
+
+- name: Test for webapp to deploy
+  set_fact:
+    any_webapp_to_deploy: "{{ webapps_deploy | default(None) != None }}"
+
+- name: Append truncated appname
+  set_fact:
+    wde_item: { 'name':"{{ item.name }}", 'war_version':"{{ item.war_version }}", 'war_tag':"{{ item.war_tag }}", 'path':"{{ item.path }}", 'dbname':"{{ item.name | truncate(16, true, '', 0)}}" }
+  with_items: "{{ webapps_deploy }}"
+  register: wde_aux
+  when: any_webapp_to_deploy
+
+- name: Webapps deploy extended
+  set_fact:
+    webapps_deploy_extended: "{{ wde_aux.results | map(attribute='ansible_facts.wde_item') | list }}"
+  when: any_webapp_to_deploy
+
+# Tomcat may be stopped here
+- include_tasks: tasks/webapps_conf.yml
+  when: any_webapp_to_deploy
+
+# vim: ff=unix:ai:et:sw=2:ts=2:
