@@ -1,32 +1,23 @@
 ---
 
-#- name: Set authorized key for user copying it from current user
-#  authorized_key:
-#    user: "{{ spark_user }}"
-#    state: present
-#    key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
-
-
-#- name: Create ssh dir at user home
-#  file:
-#    state: directory
-#    path: "/home/{{ spark_user }}/.ssh"
-#    owner: "{{ spark_user }}"
-#    group: "{{ spark_user }}"
-
-- pause:
-    prompt: "Haga login en la máquina con molecule login -h {{ ansible_hostname }} y ejecute
-             ssh-copy-id -i ~/.ssh/id_rsa.pub {{ spark_worker_user }}@{{ spark_worker_ip }}"
-    echo: yes
+- name: Ssh copy id from master to worker
+  shell: |
+    SSHPASS={{ spark_worker_user_pwd }} sshpass -e scp ~/.ssh/id_rsa.pub {{ spark_worker_user }}@{{ spark_worker_ip }}:/home/{{ spark_worker_user }}/
+    SSHPASS={{ spark_worker_user_pwd }} sshpass -e ssh {{ spark_worker_user }}@{{ spark_worker_ip }} 'cat id_rsa.pub > .ssh/authorized_keys'
+  become: yes
+  become_user: "{{ spark_master_user }}"
+  ignore_errors: true
   when: ansible_hostname == "master"
 
-- pause:
-    prompt: "Haga login en la máquina con molecule login -h {{ ansible_hostname }} y ejecute
-             ssh-copy-id -i ~/.ssh/id_rsa.pub {{ spark_master_user }}@{{ spark_master_ip }}"
-    echo: yes
+- name: Ssh copy id from worker to master
+  shell: |
+    SSHPASS={{ spark_master_user_pwd }} sshpass -e scp ~/.ssh/id_rsa.pub {{ spark_master_user }}@{{ spark_master_ip }}:/home/{{ spark_master_user }}/
+    SSHPASS={{ spark_master_user_pwd }} sshpass -e ssh {{ spark_master_user }}@{{ spark_master_ip }} 'cat id_rsa.pub > .ssh/authorized_keys'
+  become: yes
+  become_user: "{{ spark_worker_user }}"
+  ignore_errors: true
   when: ansible_hostname == "worker"
 
 
-    
 # vim: ff=unix:ai:et:sw=2:ts=2:
 

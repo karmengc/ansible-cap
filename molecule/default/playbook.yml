@@ -9,6 +9,7 @@
     - role: ansible-spark
       spark_user: "{{ spark_worker_user }}"
       spark_user_password: "{{ spark_worker_user_pwd }}"
+      spark_node_ip: "{{ spark_worker_ip }}"
 
 - name: Set master
   hosts: master
@@ -20,6 +21,7 @@
     - role: ansible-spark
       spark_user: "{{ spark_master_user }}"
       spark_user_password: "{{ spark_master_user_pwd }}"
+      spark_node_ip: "{{ spark_master_ip }}"
 
       #- hosts: master
       #  vars_files:
