@@ -1,0 +1,11 @@
+---
+
+- name: Launch test app at master
+  shell: |
+     {{ spark_install_dir }}/spark-{{ spark_version }}/bin/spark-submit --master spark://{{ spark_master_ip }}:7077 --class org.apache.spark.examples.mllib.KMeansExample {{ spark_install_dir }}/spark-{{ spark_version }}/examples/jars/spark-examples_2.11-2.2.0.jar
+  become: yes
+  become_user: "{{ spark_master_user }}"
+  ignore_errors: true
+
+
+# vim: ff=unix:ai:et:sw=2:ts=2:

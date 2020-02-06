@@ -1,25 +1,19 @@
 ---
 
-- name: Download Scala package
-  get_url:
-    url: "{{ scala_mirror }}/scala-{{ scala_version }}.rpm"
-    dest: "/tmp/scala-{{ scala_version }}.rpm"
+#- name: Install Java and Scala packages
+#  yum:
+#    name:
+#      - java
+#      - java-devel
+#    state: present
 
-- name: Install Java and Scala packages
-  yum:
-    name:
-      - java
-      - java-devel
-      - "/tmp/scala-{{ scala_version }}.rpm"
-    state: present
-
-- include: set_master_conf.yml
-  when: ansible_hostname == "master"
-
-- include: set_worker_conf.yml
-  when: ansible_hostname == "worker"
-
-- include: authorize_keys.yml
+#- include: set_master_conf.yml
+#  when: ansible_hostname == "master"
+#
+#- include: set_worker_conf.yml
+#  when: ansible_hostname == "worker"
+#
+#- include: authorize_keys.yml
 
 - name: Set etc_hosts
   blockinfile:
@@ -38,42 +32,53 @@
     owner: "{{ spark_user }}"
     group: "{{ spark_user }}"
 
-- name: Download Spark
+- name: Download Hadoop
   get_url:
-    url: "{{ spark_mirror }}/spark-{{ spark_version }}.tgz"
-    dest: "/tmp/spark-{{ spark_version }}.tgz"
+    url: "{{ hadoop_mirror }}/hadoop-{{ hadoop_version }}/hadoop-{{ hadoop_version }}.tar.gz"
+    dest: "/tmp/hadoop-{{ hadoop_version }}.tar.gz"
 
-- name: Extract Spark
+- name: Extract Hadoop
   unarchive:
-    src: "/tmp/spark-{{ spark_version }}.tgz"
-    dest: "{{ spark_install_dir }}"
+    src: "/tmp/hadoop-{{ hadoop_version }}.tar.gz"
+    dest: "{{ hadoop_install_dir }}"
     copy: no
-    owner: "{{ spark_user }}"
-    group: "{{ spark_user }}"
-    creates: "{{ spark_install_dir }}/spark-{{ spark_version }}"
+    owner: "{{ hadoop_user }}"
+    group: "{{ hadoop_user }}"
+    creates: "{{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}"
 
 - name: Create symbolic link
   file:
-    src: "{{ spark_install_dir }}/spark-{{ spark_version }}"
-    path: "/usr/local/spark"
+    src: "{{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}"
+    path: "/usr/local/hadoop"
     state: link
-    owner: "{{ spark_user }}"
-    group: "{{ spark_user }}"
+    owner: "{{ hadoop_user }}"
+    group: "{{ hadoop_user }}"
 
 - name: Set var log spark perms
   file:
-    path: "/var/log/spark"
+    path: "/var/log/hadoop"
     state: directory
-    owner: "{{ spark_user }}"
-    group: "{{ spark_user }}"
+    owner: "{{ hadoop_user }}"
+    group: "{{ hadoop_user }}"
     mode: 0755
 
-- name: Configure Spark environment
+- name: Configure Hadoop environment
   template:
-    src: spark-env.sh.j2
-    dest: "{{ spark_install_dir }}/spark-{{ spark_version }}/conf/spark-env.sh"
-    owner: "{{ spark_user }}"
-  notify: "Restart all spark from master"
+    src: hadoop-env.sh.j2
+    dest: "{{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}/etc/hadoop/hadoop-env.sh"
+    owner: "{{ hadoop_user }}"
+#  notify: "Restart all hadoop from master"
+
+    #Editar fichero core-site.xml
+    #Editar fichero hdfs-site.xml
+    #Editar fichero slaves
+    #Editar fichero /etc/hosts - hacerlo aquí porque añade cosas de Ipv6 y es diferente en master que en worker
+    #y se elimina la línea de localhost sólo en el master
+    #formatear stma ficheros hdfs namenode --format
+    #levnatar hadoop start-dfs.sh
+    #logs de hadoop en /opt/hadoop/logs
+    #Tests comandos de prueba
+
 
 #- name: Configure Spark defaults config file
 #  template:

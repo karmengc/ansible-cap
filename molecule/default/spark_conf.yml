@@ -16,3 +16,5 @@ spark_worker_memory: "512M"
 spark_slaves: ["192.168.130.150"]
 
 spark_user_groups: []
+
+spark_test_app: false
