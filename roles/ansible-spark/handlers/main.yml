@@ -1,0 +1,13 @@
+---
+
+- name: "Restart all spark from master"
+  shell: |
+    {{ spark_install_dir }}/spark-{{ spark_version }}/sbin/stop-all.sh
+    sleep 20
+    {{ spark_install_dir }}/spark-{{ spark_version }}/sbin/start-all.sh
+  become: yes
+  become_user: "{{ spark_master_user }}"
+  ignore_errors: true
+  when: ansible_hostname == "master"
+
+# vim: ff=unix:ai:et:sw=2:ts=2:

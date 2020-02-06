@@ -1,23 +1,48 @@
 ---
 
+- name: Create ssh config file
+  template:
+    src: ssh_config.j2
+    dest: "/home/{{ spark_user }}/.ssh/config"
+    owner: "{{ spark_user }}"
+    mode: 0600
+
 - name: Ssh copy id from master to worker
   shell: |
-    SSHPASS={{ spark_worker_user_pwd }} sshpass -e scp ~/.ssh/id_rsa.pub {{ spark_worker_user }}@{{ spark_worker_ip }}:/home/{{ spark_worker_user }}/
-    SSHPASS={{ spark_worker_user_pwd }} sshpass -e ssh {{ spark_worker_user }}@{{ spark_worker_ip }} 'cat id_rsa.pub > .ssh/authorized_keys'
+    SSHPASS={{ spark_worker_user_pwd }} sshpass -e scp ~/.ssh/id_rsa.pub {{ spark_worker_user }}@{{ spark_worker_ip }}:/home/{{ spark_worker_user }}/ 2>&1
+    SSHPASS={{ spark_worker_user_pwd }} sshpass -e ssh {{ spark_worker_user }}@{{ spark_worker_ip }} 'cat id_rsa.pub > .ssh/authorized_keys' 2>&1
   become: yes
   become_user: "{{ spark_master_user }}"
   ignore_errors: true
   when: ansible_hostname == "master"
+  register: sshcopymaster
+
+- debug: var=sshcopymaster.rc
 
 - name: Ssh copy id from worker to master
   shell: |
-    SSHPASS={{ spark_master_user_pwd }} sshpass -e scp ~/.ssh/id_rsa.pub {{ spark_master_user }}@{{ spark_master_ip }}:/home/{{ spark_master_user }}/
-    SSHPASS={{ spark_master_user_pwd }} sshpass -e ssh {{ spark_master_user }}@{{ spark_master_ip }} 'cat id_rsa.pub > .ssh/authorized_keys'
+    SSHPASS={{ spark_master_user_pwd }} sshpass -e scp ~/.ssh/id_rsa.pub {{ spark_master_user }}@{{ spark_master_ip }}:/home/{{ spark_master_user }}/ 2>&1
+    SSHPASS={{ spark_master_user_pwd }} sshpass -e ssh {{ spark_master_user }}@{{ spark_master_ip }} 'cat id_rsa.pub > .ssh/authorized_keys' 2>&1
   become: yes
   become_user: "{{ spark_worker_user }}"
   ignore_errors: true
   when: ansible_hostname == "worker"
+  register: sshcopyworker
 
+- debug: var=sshcopyworker.rc
+
+
+- name: Set ssh dir and files perms
+  file:
+    path: /home/{{ spark_master_user }}/.ssh/
+    owner: "{{ spark_user }}"
+    mode: 0600
+    recurse: yes
+- name: Set ssh dir perms
+  file:
+    path: /home/{{ spark_master_user }}/.ssh
+    owner: "{{ spark_user }}"
+    mode: 0700
 
 # vim: ff=unix:ai:et:sw=2:ts=2:
 

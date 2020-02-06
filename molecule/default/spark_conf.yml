@@ -1,14 +1,18 @@
 ---
 
 spark_master_ip: "192.168.130.148"
-spark_master_user: "usuariomaster"
-spark_master_user_pwd: "usuariomaster1"
+#spark_master_user: "usuariomaster"
+spark_master_user: "sparkuser"
+#spark_master_user_pwd: "usuariomaster1"
+spark_master_user_pwd: "sparkuser1"
 
 spark_worker_ip: "192.168.130.150"
-spark_worker_user: "usuarioworker"
-spark_worker_user_pwd: "usuarioworker1"
-spark_worker_cores: 1
-spark_worker_memory: 1
+#spark_worker_user: "usuarioworker"
+spark_worker_user: "sparkuser"
+#spark_worker_user_pwd: "usuarioworker1"
+spark_worker_user_pwd: "sparkuser1"
+spark_worker_cores: "1"
+spark_worker_memory: "512M"
 spark_slaves: ["192.168.130.150"]
 
 spark_user_groups: []

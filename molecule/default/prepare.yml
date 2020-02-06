@@ -24,13 +24,7 @@
         state: present
         generate_ssh_key: true
         groups: "{{ spark_user_groups }}"
-    - name: Ssh copy id from master to worker
-      shell: |
-        SSHPASS={{ spark_worker_user_pwd }} sshpass -e scp ~/.ssh/id_rsa.pub {{ spark_worker_user }}@{{ spark_worker_ip }}:/home/{{ spark_worker_user }}/
-        SSHPASS={{ spark_worker_user_pwd }} sshpass -e ssh {{ spark_worker_user }}@{{ spark_worker_ip }} 'cat id_rsa.pub > .ssh/authorized_keys'
-      become: yes
-      become_user: "{{ spark_master_user }}"
-      ignore_errors: true
+
 
 - name: Prepare worker
   hosts: worker
@@ -47,11 +41,3 @@
         state: present
         generate_ssh_key: true
         groups: "{{ spark_user_groups }}"
-    - name: Ssh copy id from worker to master
-      shell: |
-        SSHPASS={{ spark_master_user_pwd }} sshpass -e scp ~/.ssh/id_rsa.pub {{ spark_master_user }}@{{ spark_master_ip }}:/home/{{ spark_master_user }}/
-        SSHPASS={{ spark_master_user_pwd }} sshpass -e ssh {{ spark_master_user }}@{{ spark_master_ip }} 'cat id_rsa.pub > .ssh/authorized_keys'
-      become: yes
-      become_user: "{{ spark_worker_user }}"
-      ignore_errors: true
-

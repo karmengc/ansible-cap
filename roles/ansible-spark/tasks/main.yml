@@ -9,28 +9,17 @@
   yum:
     name:
       - java
+      - java-devel
       - "/tmp/scala-{{ scala_version }}.rpm"
     state: present
 
+- include: set_master_conf.yml
+  when: ansible_hostname == "master"
 
-    #- name: Create Spark user
-    #  user:
-    #    name: "{{ spark_user }}"
-    #    password: "{{ spark_user_password | password_hash('sha512') }}"
-    #    system: yes
-    #    state: present
-    #    generate_ssh_key: true
-    #    groups: "{{ spark_user_groups }}"
+- include: set_worker_conf.yml
+  when: ansible_hostname == "worker"
 
-- name: Set JAVA HOME
-  lineinfile:
-    dest: "/home/{{ spark_user }}/.bashrc"
-    line: "export JAVA_HOME=$(dirname $(dirname $(readlink $(readlink $(which java)))))"
-    owner: "{{ spark_user }}"
-    group: "{{ spark_user }}"
-    insertafter: 'EOF'
-    create: yes
-    state: present
+- include: authorize_keys.yml
 
 - name: Set etc_hosts
   blockinfile:
@@ -59,24 +48,46 @@
     src: "/tmp/spark-{{ spark_version }}.tgz"
     dest: "{{ spark_install_dir }}"
     copy: no
+    owner: "{{ spark_user }}"
+    group: "{{ spark_user }}"
     creates: "{{ spark_install_dir }}/spark-{{ spark_version }}"
+
+- name: Create symbolic link
+  file:
+    src: "{{ spark_install_dir }}/spark-{{ spark_version }}"
+    path: "/usr/local/spark"
+    state: link
+    owner: "{{ spark_user }}"
+    group: "{{ spark_user }}"
+
+- name: Set var log spark perms
+  file:
+    path: "/var/log/spark"
+    state: directory
+    owner: "{{ spark_user }}"
+    group: "{{ spark_user }}"
+    mode: 0755
 
 - name: Configure Spark environment
   template:
     src: spark-env.sh.j2
     dest: "{{ spark_install_dir }}/spark-{{ spark_version }}/conf/spark-env.sh"
+    owner: "{{ spark_user }}"
+  notify: "Restart all spark from master"
 
-    #- name: Configure Spark defaults config file
-    #  template:
-    #    src: spark-defaults.conf.j2
-    #    dest: "{{ spark_usr_parent_dir }}/spark-{{ spark_version }}/conf/spark-defaults.conf"
+#- name: Configure Spark defaults config file
+#  template:
+#    src: spark-defaults.conf.j2
+#    dest: "{{ spark_usr_parent_dir }}/spark-{{ spark_version }}/conf/spark-defaults.conf"
 
 - name: Configure slaves config file
   template:
     src: slaves.j2
     dest: "{{ spark_install_dir }}/spark-{{ spark_version }}/conf/slaves"
+    owner: "{{ spark_user }}"
+    group: "{{ spark_user }}"
+  notify: "Restart all spark from master"
 
-- include: authorize_keys.yml
 
 - name: Check if Spark is already runnning
   shell: pidof java
@@ -85,8 +96,16 @@
 
 - debug: var=spark_running.rc
 
+  #- name: Launch start script at Master
+  #  command: "su {{ spark_master_user }} {{ spark_install_dir }}/spark-{{ spark_version }}/sbin/start-all.sh"
+  #  when: ansible_hostname == "master" and spark_running.rc == 1
+
 - name: Launch start script at Master
-  command: "sh {{ spark_install_dir }}/spark-{{ spark_version }}/sbin/start-all.sh"
+  shell: |
+    {{ spark_install_dir }}/spark-{{ spark_version }}/sbin/start-all.sh
+    become: yes
+  become_user: "{{ spark_master_user }}"
+  #ignore_errors: true
   when: ansible_hostname == "master" and spark_running.rc == 1
 
 - include: spark-log4j.yml

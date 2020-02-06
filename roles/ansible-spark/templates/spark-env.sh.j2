@@ -67,3 +67,5 @@ export SPARK_WORKER_CORES={{ spark_worker_cores }}
 export SPARK_WORKER_MEMORY={{ spark_worker_memory }}
 
 export SPARK_LOG_DIR={{ spark_log_dir }}
+
+export JAVA_HOME=$(dirname $(dirname $(readlink $(readlink $(which java)))))

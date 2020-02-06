@@ -21,6 +21,11 @@ Las siguientes variables deberán ser asignadas en los ficheros de configuració
 
 \- { 'name':'redcidec201601', 'war\_version':'20160405', 'war\_tag':'146cab8b', 'path':'aciisi/redcide/c201601' }
 
+
+Importante la siguiente variable hay que especificar si son Megas o Gigas, si ponemos sólo 1 pensará que es 1M
+(más info https://stackoverflow.com/questions/58206006/whats-the-reason-on-memory-is-below-1mb-or-missing-a-m-g-at-the-end-of-the-me)
+
+
 ## archive-logs
 
 ## Molecule tests
