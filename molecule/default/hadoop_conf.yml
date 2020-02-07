@@ -1,0 +1,9 @@
+---
+
+hadoop_master_ip: "192.168.130.148"
+
+hadoop_worker_ip: "192.168.130.150"
+
+hadoop_user: usuario
+hadoop_user_groups: []
+

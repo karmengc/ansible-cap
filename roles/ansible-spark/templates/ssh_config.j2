@@ -3,4 +3,6 @@ Host {% if ansible_hostname == "master" %}worker{% else %}master{% endif %}
   user {% if ansible_hostname == "master" %}{{ spark_worker_user }}{% else %}{{ spark_master_user }}{% endif %}
 
   IdentityFile ~/.ssh/id_rsa
+  StrictHostKeyChecking no
+  UserKnownHostsFile=/dev/null
 

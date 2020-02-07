@@ -1,11 +1,27 @@
 ---
 
-- name: Launch test app at master
-  shell: |
-     {{ spark_install_dir }}/spark-{{ spark_version }}/bin/spark-submit --master spark://{{ spark_master_ip }}:7077 --class org.apache.spark.examples.mllib.KMeansExample {{ spark_install_dir }}/spark-{{ spark_version }}/examples/jars/spark-examples_2.11-2.2.0.jar
-  become: yes
-  become_user: "{{ spark_master_user }}"
-  ignore_errors: true
+#- name: Launch test app at master
+#  shell: |
+#     {{ spark_install_dir }}/spark-{{ spark_version }}/bin/spark-submit --master spark://{{ spark_master_ip }}:7077 --class org.apache.spark.examples.mllib.KMeansExample {{ spark_install_dir }}/spark-{{ spark_version }}/examples/jars/spark-examples_2.11-2.2.0.jar
+#  become: yes
+#  become_user: "{{ spark_master_user }}"
+#  async: 1000
+#  poll: 0
+#  #no_log: true
+#  ignore_errors: true
+#  register: test_app_launched
+#
+#- name: 'Test App Launched - check on async task'
+#  async_status:
+#    jid: "{{ test_app_launched.ansible_job_id }}"
+#  register: job_result
+#  until: test_app_launched.finished
+#  retries: 30
 
+
+- name: test app message
+  debug:
+    msg: "No es posible ejecutar la aplicación de test desde Ansible, por favor, acceda a la máquina máster y ejecute
+          {{ spark_install_dir }}/spark-{{ spark_version }}/bin/spark-submit --master spark://{{ spark_master_ip }}:7077 --class org.apache.spark.examples.mllib.KMeansExample {{ spark_install_dir }}/spark-{{ spark_version }}/examples/jars/spark-examples_2.11-2.2.0.jar"
 
 # vim: ff=unix:ai:et:sw=2:ts=2:

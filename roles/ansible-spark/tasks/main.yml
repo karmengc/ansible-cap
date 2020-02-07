@@ -105,7 +105,8 @@
     {{ spark_install_dir }}/spark-{{ spark_version }}/sbin/start-all.sh
     become: yes
   become_user: "{{ spark_master_user }}"
-  #ignore_errors: true
+  ignore_errors: true
+  no_log: true
   when: ansible_hostname == "master" and spark_running.rc == 1
 
 - include: spark-log4j.yml

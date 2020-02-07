@@ -8,54 +8,32 @@
     group: "{{ spark_user }}"
     mode: 0600
 
-### Known_hosts test###
-- name: scan and register
-  command: "ssh-keyscan {{ansible_host|default(inventory_hostname)}}"
-  register: "host_keys"
-  changed_when: false
-
-- name: create known hosts
-  file:
-    path: "/home/{{ spark_user }}/.ssh/known_hosts"
-    state: touch
-  run_once: true
-
-- name: Set known hosts content
-  blockinfile:
-    dest: "/home/{{ spark_user }}/.ssh/known_hosts"
-    marker: "# {mark} This part managed by Ansible"
-    block: |
-      {% for h in groups['all'] if hostvars[h].host_keys is defined %}
-      {{ hostvars[h].host_keys.stdout }}
-      {% endfor %}
-  run_once: true
-### end known_host test ###
-
-- name: Ssh copy id from master to worker
-  shell: |
-    SSHPASS={{ spark_worker_user_pwd }} sshpass -e scp ~/.ssh/id_rsa.pub {{ spark_worker_user }}@{{ spark_worker_ip }}:/home/{{ spark_worker_user }}/ 2>&1
-    SSHPASS={{ spark_worker_user_pwd }} sshpass -e ssh {{ spark_worker_user }}@{{ spark_worker_ip }} 'cat id_rsa.pub > .ssh/authorized_keys' 2>&1
-    SSHPASS={{ spark_worker_user_pwd }} sshpass -e ssh {{ spark_worker_user }}@worker 'ls -la' 2>&1
-  become: yes
-  become_user: "{{ spark_master_user }}"
-  ignore_errors: true
-  when: ansible_hostname == "master"
-  register: sshcopymaster
-
-- debug: var=sshcopymaster.rc
-
-- name: Ssh copy id from worker to master
-  shell: |
-    SSHPASS={{ spark_master_user_pwd }} sshpass -e scp ~/.ssh/id_rsa.pub {{ spark_master_user }}@{{ spark_master_ip }}:/home/{{ spark_master_user }}/ 2>&1
-    SSHPASS={{ spark_master_user_pwd }} sshpass -e ssh {{ spark_master_user }}@{{ spark_master_ip }} 'cat id_rsa.pub > .ssh/authorized_keys' 2>&1
-    SSHPASS={{ spark_master_user_pwd }} sshpass -e ssh {{ spark_master_user }}@master 'ls -la' 2>&1
-  become: yes
-  become_user: "{{ spark_worker_user }}"
-  ignore_errors: true
-  when: ansible_hostname == "worker"
-  register: sshcopyworker
-
-- debug: var=sshcopyworker.rc
+#
+#- name: Ssh copy id from master to worker
+#  shell: |
+#    SSHPASS={{ spark_worker_user_pwd }} sshpass -e scp ~/.ssh/id_rsa.pub {{ spark_worker_user }}@{{ spark_worker_ip }}:/home/{{ spark_worker_user }}/ 2>&1
+#    SSHPASS={{ spark_worker_user_pwd }} sshpass -e ssh {{ spark_worker_user }}@{{ spark_worker_ip }} 'cat id_rsa.pub > .ssh/authorized_keys' 2>&1
+#    SSHPASS={{ spark_worker_user_pwd }} sshpass -e ssh {{ spark_worker_user }}@worker 'ls -la' 2>&1
+#  become: yes
+#  become_user: "{{ spark_master_user }}"
+#  ignore_errors: true
+#  when: ansible_hostname == "master"
+#  register: sshcopymaster
+#
+#- debug: var=sshcopymaster.rc
+#
+#- name: Ssh copy id from worker to master
+#  shell: |
+#    SSHPASS={{ spark_master_user_pwd }} sshpass -e scp ~/.ssh/id_rsa.pub {{ spark_master_user }}@{{ spark_master_ip }}:/home/{{ spark_master_user }}/ 2>&1
+#    SSHPASS={{ spark_master_user_pwd }} sshpass -e ssh {{ spark_master_user }}@{{ spark_master_ip }} 'cat id_rsa.pub > .ssh/authorized_keys' 2>&1
+#    SSHPASS={{ spark_master_user_pwd }} sshpass -e ssh {{ spark_master_user }}@master 'ls -la' 2>&1
+#  become: yes
+#  become_user: "{{ spark_worker_user }}"
+#  ignore_errors: true
+#  when: ansible_hostname == "worker"
+#  register: sshcopyworker
+#
+#- debug: var=sshcopyworker.rc
 
 
 - name: Set ssh dir and files perms
