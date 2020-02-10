@@ -1,4 +1,7 @@
 ---
+
+- include: authorize_keys.yml
+
 - name: Disable Ipv6
   blockinfile:
     block: |
@@ -34,10 +37,18 @@
     group: "{{ hadoop_user }}"
     creates: "{{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}"
 
-- name: Create symbolic link
+- name: Create symbolic link usr local
   file:
     src: "{{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}"
     path: "/usr/local/hadoop"
+    state: link
+    owner: "{{ hadoop_user }}"
+    group: "{{ hadoop_user }}"
+
+- name: Create symbolic link opt
+  file:
+    src: "{{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}"
+    path: "/opt/hadoop"
     state: link
     owner: "{{ hadoop_user }}"
     group: "{{ hadoop_user }}"
@@ -49,13 +60,6 @@
     owner: "{{ hadoop_user }}"
     group: "{{ hadoop_user }}"
     mode: 0755
-
-- name: Configure Hadoop environment
-  template:
-    src: hadoop-env.sh.j2
-    dest: "{{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}/etc/hadoop/hadoop-env.sh"
-    owner: "{{ hadoop_user }}"
-#  notify: "Restart all hadoop from master"
 
 - name: Set bash profile
   blockinfile:
@@ -78,56 +82,99 @@
     create: yes
     state: present
 
+- name: Configure Hadoop environment hadoop.env.sh
+  copy:
+    src: hadoop-env.sh
+    dest: "{{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}/etc/hadoop/hadoop-env.sh"
+    owner: "{{ hadoop_user }}"
+    group: "{{ hadoop_user }}"
+  notify: "Restart all hadoop from master"
+
+- name: Configure Hadoop core-site.xml
+  copy:
+    src: core-site.xml
+    dest: "{{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}/etc/hadoop/core-site.xml"
+    owner: "{{ hadoop_user }}"
+    group: "{{ hadoop_user }}"
+  notify: "Restart all hadoop from master"
+
+- name: Configure Hadoop hdfs-site.xml
+  template:
+    src: hdfs-site.xml.j2
+    dest: "{{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}/etc/hadoop/hdfs-site.xml"
+    owner: "{{ hadoop_user }}"
+    group: "{{ hadoop_user }}"
+  notify: "Restart all hadoop from master"
 
 
-    #Editar fichero core-site.xml
-    #Editar fichero hdfs-site.xml
-    #Editar fichero slaves
-    #Editar fichero /etc/hosts - hacerlo aquí porque añade cosas de Ipv6 y es diferente en master que en worker
-    #y se elimina la línea de localhost sólo en el master
-    #formatear stma ficheros hdfs namenode --format
-    #levnatar hadoop start-dfs.sh
-    #logs de hadoop en /opt/hadoop/logs
-    #Tests comandos de prueba
+- name: Create namenode and datanode dirs
+  file:
+    path: "{{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}/hadoop_data/hdfs/{{ item }}"
+    state: "directory"
+    owner: "{{ hadoop_user }}"
+    group: "{{ hadoop_user }}"
+  with_items:
+    - namenode
+    - datanode
+  register: folders_created
 
+- name: Launch Hadoop at Master
+  shell: |
+    {{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}/bin/hdfs namenode -format
+  become: yes
+  become_user: "{{ hadoop_user }}"
+  #ignore_errors: true
+  when: ansible_hostname == "master" and folders_created is changed
 
-#- name: Configure Spark defaults config file
-#  template:
-#    src: spark-defaults.conf.j2
-#    dest: "{{ spark_usr_parent_dir }}/spark-{{ spark_version }}/conf/spark-defaults.conf"
-
-- name: Configure slaves config file
+- name: Configure Hadoop slaves
   template:
     src: slaves.j2
-    dest: "{{ spark_install_dir }}/spark-{{ spark_version }}/conf/slaves"
-    owner: "{{ spark_user }}"
-    group: "{{ spark_user }}"
-  notify: "Restart all spark from master"
+    dest: "{{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}/etc/hadoop/slaves"
+    owner: "{{ hadoop_user }}"
+    group: "{{ hadoop_user }}"
+  notify: "Restart all hadoop from master"
+  when: ansible_hostname == "master"
 
+- name: Delete 127.0.0.1 line at master
+  lineinfile:
+    path: "/etc/hosts"
+    regexp: '^127\.0\.0\.1'
+    state: "absent"
+  when: ansible_hostname == "master"
 
-- name: Check if Spark is already runnning
-  shell: pidof java
+- name: Set etc_hosts
+  blockinfile:
+    path: "/etc/hosts"
+    insertafter: EOF
+    block: |
+      {{ hadoop_master_ip }} master
+      {{ hadoop_worker_ip }} worker
+
+- name: Check if Hadoop is runnning on Worker
+  shell: jps | grep DataNode
   ignore_errors: yes
-  register: spark_running
+  register: hadoop_running_worker
+  when: ansible_hostname == "worker"
 
-- debug: var=spark_running.rc
+- debug: var=hadoop_running_worker.rc
+  when: ansible_hostname == "worker"
 
-  #- name: Launch start script at Master
-  #  command: "su {{ spark_master_user }} {{ spark_install_dir }}/spark-{{ spark_version }}/sbin/start-all.sh"
-  #  when: ansible_hostname == "master" and spark_running.rc == 1
+- name: Check if Hadoop is already runnning on Master
+  shell: jps | grep NameNode
+  ignore_errors: yes
+  register: hadoop_running_master
+  when: ansible_hostname == "master"
 
-- name: Launch start script at Master
+- debug: var=hadoop_running_master.rc
+  when: ansible_hostname == "master"
+
+- name: Launch Hadoop at Master (2)
   shell: |
-    {{ spark_install_dir }}/spark-{{ spark_version }}/sbin/start-all.sh
-    become: yes
-  become_user: "{{ spark_master_user }}"
+    {{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}/sbin/start-all.sh
+  become: yes
+  become_user: "{{ hadoop_user }}"
   #ignore_errors: true
-  when: ansible_hostname == "master" and spark_running.rc == 1
-
-- include: spark-log4j.yml
-
-- include: test_app.yml
-  when: ansible_hostname == "master" and spark_test_app == true
+  when: ansible_hostname == "master" and hadoop_running_master.rc == 1
 
 
 # vim: ff=unix:ai:et:sw=2:ts=2:

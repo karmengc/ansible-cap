@@ -3,6 +3,7 @@
   hosts: worker
   vars_files:
     - spark_conf.yml
+    - hadoop_conf.yml
   become: true
   gather_facts: true
   roles:
@@ -17,11 +18,20 @@
       spark_user: "{{ spark_worker_user }}"
       spark_user_password: "{{ spark_worker_user_pwd }}"
       spark_node_ip: "{{ spark_worker_ip }}"
+    - role: ansible-ssh-copy-id
+      vars:
+        hostname: "{{ hadoop_master_ip }}"
+        username: "{{ hadoop_user }}"
+        password: "{{ hadoop_user_pwd }}"
+        ssh_public_key: "/home/{{ hadoop_user }}/.ssh/id_rsa.pub"
+        ssh_port: 22
+    - role: ansible-hdfs
 
 - name: Set master
   hosts: master
   vars_files:
     - spark_conf.yml
+    - hadoop_conf.yml
   become: true
   gather_facts: true
   roles:
@@ -36,31 +46,20 @@
       spark_user: "{{ spark_master_user }}"
       spark_user_password: "{{ spark_master_user_pwd }}"
       spark_node_ip: "{{ spark_master_ip }}"
-
-      #- hosts: master
-      #  vars_files:
-      #    - spark_conf.yml
-      #  tasks:
-      #    - name: Ssh copy id from master to worker
-      #      shell: |
-      #        SSHPASS={{ spark_worker_user_pwd }} sshpass -e scp ~/.ssh/id_rsa.pub {{ spark_worker_user }}@{{ spark_worker_ip }}:/home/{{ spark_worker_user }}/
-      #        SSHPASS={{ spark_worker_user_pwd }} sshpass -e ssh {{ spark_worker_user }}@{{ spark_worker_ip }} 'cat id_rsa.pub > .ssh/authorized_keys'
-      #      become: yes
-      #      become_user: "{{ spark_master_user }}"
-      #      ignore_errors: true
-      #
-      #  #scp .ssh/id_rsa.pub user@other-host; ssh user@other-host 'cat id_rsa.pub >> .ssh/authorized_keys,
-      #
-      #- hosts: worker
-      #  vars_files:
-      #    - spark_conf.yml
-      #  tasks:
-      #    - name: Ssh copy id from worker to master
-      #      shell: |
-      #        SSHPASS={{ spark_master_user_pwd }} sshpass -e scp ~/.ssh/id_rsa.pub {{ spark_master_user }}@{{ spark_master_ip }}:/home/{{ spark_master_user }}/
-      #        SSHPASS={{ spark_master_user_pwd }} sshpass -e ssh {{ spark_master_user }}@{{ spark_master_ip }} 'cat id_rsa.pub > .ssh/authorized_keys'
-      #      become: yes
-      #      become_user: "{{ spark_worker_user }}"
-      #      ignore_errors: true
+    - role: ansible-ssh-copy-id
+      vars:
+        hostname: "{{ hadoop_worker_ip }}"
+        username: "{{ hadoop_user }}"
+        password: "{{ hadoop_user_pwd }}"
+        ssh_public_key: "/home/{{ hadoop_user }}/.ssh/id_rsa.pub"
+        ssh_port: 22
+    - role: ansible-ssh-copy-id
+      vars:
+        hostname: "{{ hadoop_master_ip }}"
+        username: "{{ hadoop_user }}"
+        password: "{{ hadoop_user_pwd }}"
+        ssh_public_key: "/home/{{ hadoop_user }}/.ssh/id_rsa.pub"
+        ssh_port: 22
+    - role: ansible-hdfs
 
 

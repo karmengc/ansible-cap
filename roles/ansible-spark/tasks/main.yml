@@ -60,6 +60,14 @@
     owner: "{{ spark_user }}"
     group: "{{ spark_user }}"
 
+- name: Create symbolic link
+  file:
+    src: "{{ spark_install_dir }}/spark-{{ spark_version }}"
+    path: "/opt/spark"
+    state: link
+    owner: "{{ spark_user }}"
+    group: "{{ spark_user }}"
+
 - name: Set var log spark perms
   file:
     path: "/var/log/spark"

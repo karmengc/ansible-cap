@@ -1,56 +1,12 @@
 ---
-spark_version: "2.2.0-bin-hadoop2.6"
-spark_mirror: "https://archive.apache.org/dist/spark/spark-2.2.0"
-spark_install_java: yes      # Required to check if you need to install Java dependency
+hadoop_version: "2.6.5"
+hadoop_mirror: "https://archive.apache.org/dist/hadoop/core"
+hadoop_install_java: yes      # Required to check if you need to install Java dependency
 
-spark_install_dir: "/opt/spark"
-spark_log_dir: "/var/log/spark"
+hadoop_install_dir: "/opt"
+hadoop_log_dir: "/var/log/hadoop"
 
-scala_version: "2.11.8"
-scala_mirror: "http://downloads.lightbend.com/scala/{{ scala_version }}"
+hadoop_replication_factor: "1"
 
-spark_user_groups: []         # Optional list of (OS)groups the new spark user should belong to
+hadoop_user_groups: []         # Optional list of (OS)groups the new hadoop user should belong to
 
-#spark_src_dir: "/usr/local/src"
-#spark_conf_dir: "/etc/spark"
-#spark_usr_parent_dir: "/usr/lib"  #this is the folder where the spark archive will be extracted
-#spark_usr_dir: "/usr/lib/spark"   #this is the symlink to the extracted/installed spark
-#spark_work_dir: "/usr/lib/spark/work"
-#spark_local_dirs: [] # optional list of spark-local dirs (can be used in SPARK_LOCAL_DIRS)
-#spark_local_dir_mode: "1777"
-#spark_tmp_dir: "/usr/lib/spark/tmp"
-#spark_lib_dir: "/var/lib/spark"
-#spark_run_dir: "/run/spark"
-#spark_user: "spark"           # the name of the (OS)user created for spark
-#spark_user_shell: "/bin/false"    # the spark user's default shell
-#
-#spark_symlinks_enabled: yes
-#spark_shims_enabled: yes
-#
-#spark_hive_metastore_db_installed: false
-#spark_hive_site_properties: {}
-#
-#spark_env_extras: {}
-#spark_defaults_extras: {}
-
-# Logger levels set to the official defaults
-# Ref: https://github.com/apache/spark/blob/master/conf/log4j.properties.template
-spark_log4j_loggers:
-  - name: log4j.logger.org.apache.spark.repl.Main
-    level: WARN
-  - name: log4j.logger.org.spark_project.jetty
-    level: WARN
-  - name: log4j.logger.org.spark_project.jetty.util.component.AbstractLifeCycle
-    level: ERROR
-  - name: log4j.logger.org.apache.spark.repl.SparkIMain$exprTyper
-    level: INFO
-  - name: log4j.logger.org.apache.spark.repl.SparkILoop$SparkILoopInterpreter
-    level: INFO
-  - name: log4j.logger.org.apache.parquet
-    level: ERROR
-  - name: log4j.logger.parquet
-    level: ERROR
-  - name: log4j.logger.org.apache.hadoop.hive.metastore.RetryingHMSHandler
-    level: FATAL
-  - name: log4j.logger.org.apache.hadoop.hive.ql.exec.FunctionRegistry
-    level: ERROR
