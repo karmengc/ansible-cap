@@ -41,11 +41,24 @@ Importante la siguiente variable hay que especificar si son Megas o Gigas, si po
 En este proyecto es posible realizar pruebas con Molecule, mediante las cuales se crearán dos máquinas virtuales, una que será el máster
 y otra que será el worker.
 
-Para que se creen las máquinas y sean configuradas bastará con ejecutar:
+Para que se creen las máquinas y sean configuradas bastará con ejecutar lo siguiente:
 
+
+Si queremos sólo instalar Spark:
 ```
-molecule converge
+molecule converge --scenario-name default
 ```
+
+Si queremos instalar Spark y HDFS:
+```
+molecule converge --scenario-name hdfs
+```
+
+Si queremos instalar Spark, HDFS y Mesos:
+```
+molecule converge --scenario-name mesos
+```
+
 
 Para acceder individualmente a cada una de las máquinas una vez estén creadas hacer:
 

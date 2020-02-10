@@ -4,23 +4,21 @@
   vars_files:
     - spark_conf.yml
     - hadoop_conf.yml
+    - mesos_conf.yml
   become: true
   gather_facts: true
   roles:
-    # Crear claves RSA para conectar desde Worker hacia Master con usuario spark_worker_user
     - role: ansible-ssh-copy-id
       vars:
         hostname: "{{ spark_master_ip }}"
         username: "{{ spark_worker_user }}"
         password: "{{ spark_worker_user_pwd }}"
         ssh_public_key: "/home/{{ spark_worker_user }}/.ssh/id_rsa.pub"
-        ssh_port: 22i
-    # Desplegar ansible-spark para instalar y configurar SPARK
+        ssh_port: 22
     - role: ansible-spark
       spark_user: "{{ spark_worker_user }}"
       spark_user_password: "{{ spark_worker_user_pwd }}"
       spark_node_ip: "{{ spark_worker_ip }}"
-    # Crear claves RSA para conectar desde Worker hacia Master con usuario hadoop_user
     - role: ansible-ssh-copy-id
       vars:
         hostname: "{{ hadoop_master_ip }}"
@@ -28,18 +26,18 @@
         password: "{{ hadoop_user_pwd }}"
         ssh_public_key: "/home/{{ hadoop_user }}/.ssh/id_rsa.pub"
         ssh_port: 22
-    # Desplegar ansible-hdfs para instalar y configurar HADOOP
     - role: ansible-hdfs
+    - role: ansible-mesos
 
 - name: Set master
   hosts: master
   vars_files:
     - spark_conf.yml
     - hadoop_conf.yml
+    - mesos_conf.yml
   become: true
   gather_facts: true
   roles:
-    # Crear claves RSA para conectar desde Master hacia Worker con usuario spark_master_user
     - role: ansible-ssh-copy-id
       vars:
         hostname: "{{ spark_worker_ip }}"
@@ -47,12 +45,10 @@
         password: "{{ spark_master_user_pwd }}"
         ssh_public_key: "/home/{{ spark_master_user }}/.ssh/id_rsa.pub"
         ssh_port: 22
-    # Desplegar ansible-spark para instalar y configurar SPARK
     - role: ansible-spark
       spark_user: "{{ spark_master_user }}"
       spark_user_password: "{{ spark_master_user_pwd }}"
       spark_node_ip: "{{ spark_master_ip }}"
-    # Crear claves RSA para conectar desde Master hacia Worker con usuario hadoop_user
     - role: ansible-ssh-copy-id
       vars:
         hostname: "{{ hadoop_worker_ip }}"
@@ -60,7 +56,6 @@
         password: "{{ hadoop_user_pwd }}"
         ssh_public_key: "/home/{{ hadoop_user }}/.ssh/id_rsa.pub"
         ssh_port: 22
-    # Crear claves RSA para conectar desde Master hacia el propio Master con usuario hadoop_user
     - role: ansible-ssh-copy-id
       vars:
         hostname: "{{ hadoop_master_ip }}"
@@ -68,7 +63,7 @@
         password: "{{ hadoop_user_pwd }}"
         ssh_public_key: "/home/{{ hadoop_user }}/.ssh/id_rsa.pub"
         ssh_port: 22
-    # Desplegar ansible-hdfs para instalar y configurar HADOOP
     - role: ansible-hdfs
+    - role: ansible-mesos
 
 

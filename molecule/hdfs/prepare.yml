@@ -1,0 +1,63 @@
+---
+- name: Prepare all
+  hosts: all
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Install python for Ansible
+      raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+      become: true
+      changed_when: false
+
+- name: Prepare master
+  hosts: master
+  gather_facts: false
+  vars_files:
+    - spark_conf.yml
+    - hadoop_conf.yml
+  become: true
+  tasks:
+    - name: Create master spark user
+      user:
+        name: "{{ spark_master_user }}"
+        password: "{{ spark_master_user_pwd | password_hash('sha512') }}"
+        system: yes
+        state: present
+        generate_ssh_key: true
+        groups: "{{ spark_user_groups }}"
+    - name: Create master hadoop user
+      user:
+        name: "{{ hadoop_user }}"
+        password: "{{ hadoop_user_pwd | password_hash('sha512') }}"
+        system: yes
+        state: present
+        generate_ssh_key: true
+        groups: "{{ hadoop_user_groups }}"
+
+
+
+- name: Prepare worker
+  hosts: worker
+  gather_facts: false
+  vars_files:
+    - spark_conf.yml
+    - hadoop_conf.yml
+  become: true
+  tasks:
+    - name: Create worker spark user
+      user:
+        name: "{{ spark_worker_user }}"
+        password: "{{ spark_worker_user_pwd | password_hash('sha512') }}"
+        system: yes
+        state: present
+        generate_ssh_key: true
+        groups: "{{ spark_user_groups }}"
+    - name: Create master hadoop user
+      user:
+        name: "{{ hadoop_user }}"
+        password: "{{ hadoop_user_pwd | password_hash('sha512') }}"
+        system: yes
+        state: present
+        generate_ssh_key: true
+        groups: "{{ hadoop_user_groups }}"
+
