@@ -176,5 +176,8 @@
   #ignore_errors: true
   when: ansible_hostname == "master" and hadoop_running_master.rc == 1
 
+- include: test_app.yml
+  when: ansible_hostname == "master" and hadoop_test_app == true
+
 
 # vim: ff=unix:ai:et:sw=2:ts=2:

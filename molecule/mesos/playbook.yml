@@ -4,7 +4,6 @@
   vars_files:
     - spark_conf.yml
     - hadoop_conf.yml
-    - mesos_conf.yml
   become: true
   gather_facts: true
   roles:
@@ -19,22 +18,12 @@
       spark_user: "{{ spark_worker_user }}"
       spark_user_password: "{{ spark_worker_user_pwd }}"
       spark_node_ip: "{{ spark_worker_ip }}"
-    - role: ansible-ssh-copy-id
-      vars:
-        hostname: "{{ hadoop_master_ip }}"
-        username: "{{ hadoop_user }}"
-        password: "{{ hadoop_user_pwd }}"
-        ssh_public_key: "/home/{{ hadoop_user }}/.ssh/id_rsa.pub"
-        ssh_port: 22
-    - role: ansible-hdfs
-    - role: ansible-mesos
 
 - name: Set master
   hosts: master
   vars_files:
     - spark_conf.yml
     - hadoop_conf.yml
-    - mesos_conf.yml
   become: true
   gather_facts: true
   roles:
@@ -49,6 +38,15 @@
       spark_user: "{{ spark_master_user }}"
       spark_user_password: "{{ spark_master_user_pwd }}"
       spark_node_ip: "{{ spark_master_ip }}"
+
+- name: Set worker
+  hosts: worker
+  vars_files:
+    - spark_conf.yml
+    - hadoop_conf.yml
+  become: true
+  gather_facts: true
+  roles:
     - role: ansible-ssh-copy-id
       vars:
         hostname: "{{ hadoop_worker_ip }}"
@@ -56,6 +54,17 @@
         password: "{{ hadoop_user_pwd }}"
         ssh_public_key: "/home/{{ hadoop_user }}/.ssh/id_rsa.pub"
         ssh_port: 22
+    - role: ansible-hdfs
+
+
+- name: Set master
+  hosts: master
+  vars_files:
+    - spark_conf.yml
+    - hadoop_conf.yml
+  become: true
+  gather_facts: true
+  roles:
     - role: ansible-ssh-copy-id
       vars:
         hostname: "{{ hadoop_master_ip }}"
@@ -64,6 +73,31 @@
         ssh_public_key: "/home/{{ hadoop_user }}/.ssh/id_rsa.pub"
         ssh_port: 22
     - role: ansible-hdfs
+
+- name: Set worker
+  hosts: worker
+  vars_files:
+    - spark_conf.yml
+    - hadoop_conf.yml
+  become: true
+  gather_facts: true
+  roles:
     - role: ansible-mesos
+      spark_user: "{{ spark_worker_user }}"
+      spark_user_password: "{{ spark_worker_user_pwd }}"
+      spark_node_ip: "{{ spark_worker_ip }}"
+
+- name: Set master
+  hosts: master
+  vars_files:
+    - spark_conf.yml
+    - hadoop_conf.yml
+  become: true
+  gather_facts: true
+  roles:
+    - role: ansible-mesos
+      spark_user: "{{ spark_master_user }}"
+      spark_user_password: "{{ spark_master_user_pwd }}"
+      spark_node_ip: "{{ spark_worker_ip }}"
 
 

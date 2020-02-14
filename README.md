@@ -63,6 +63,6 @@ molecule converge --scenario-name mesos
 Para acceder individualmente a cada una de las máquinas una vez estén creadas hacer:
 
 ```
-molecule login -h master
-molecule login -h worker1
+molecule login -h master --scenario-name=[default,hdfs,mesos]
+molecule login -h worker1 --scenario-name=[default,hdfs,mesos]
 ```

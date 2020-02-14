@@ -1,0 +1,12 @@
+---
+hadoop_version: "2.6.5"
+hadoop_mirror: "https://archive.apache.org/dist/hadoop/core"
+hadoop_install_java: yes      # Required to check if you need to install Java dependency
+
+hadoop_install_dir: "/opt"
+hadoop_log_dir: "/var/log/hadoop"
+
+hadoop_replication_factor: "1"
+
+hadoop_user_groups: []         # Optional list of (OS)groups the new hadoop user should belong to
+
