@@ -56,7 +56,7 @@ molecule converge --scenario-name hdfs
 
 Si queremos instalar Spark, HDFS y Mesos:
 ```
-molecule converge --scenario-name mesos
+molecule converge --scenario-name [default,hdfs,mesos]
 ```
 
 

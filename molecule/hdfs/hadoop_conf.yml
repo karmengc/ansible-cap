@@ -12,3 +12,4 @@ hadoop_slaves: ["worker"]
 
 hadoop_user_groups: []
 
+#hadoop_test_app: true

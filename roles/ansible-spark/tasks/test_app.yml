@@ -22,6 +22,15 @@
 - name: test app message
   debug:
     msg: "No es posible ejecutar la aplicación de test desde Ansible, por favor, acceda a la máquina máster y ejecute
-          {{ spark_install_dir }}/spark-{{ spark_version }}/bin/spark-submit --master spark://{{ spark_master_ip }}:7077 --class org.apache.spark.examples.mllib.KMeansExample {{ spark_install_dir }}/spark-{{ spark_version }}/examples/jars/spark-examples_2.11-2.2.0.jar"
+          en el nodo master desde el directorio {{ spark_install_dir }}/spark-{{ spark_version }} 
+          como el usuario {{ spark_user_master }} lo siguiente
+          bin/spark-submit --master spark://{{ spark_master_ip }}:7077 --class org.apache.spark.examples.mllib.KMeansExample {{ spark_install_dir }}/spark-{{ spark_version }}/examples/jars/spark-examples_2.11-2.2.0.jar"
+
+- name: restart instructions
+  debug:
+    msg: "En caso de necesitar reiniciar Spark, por favor, acceda a la máquina máster y ejecute
+          {{ spark_install_dir }}/spark-{{ spark_version }}/bin/stop-all.sh
+          {{ spark_install_dir }}/spark-{{ spark_version }}/bin/start-all.sh
+          Y compruebe con jps que se han iniciado los procesos correctamente."
 
 # vim: ff=unix:ai:et:sw=2:ts=2:
