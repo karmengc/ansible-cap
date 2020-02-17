@@ -26,3 +26,4 @@ spark_mirror: "https://archive.apache.org/dist/spark/spark-2.2.0"
 spark_install_dir: "/opt"
 spark_log_dir: "/var/log/spark"
 
+mesos_test_app: true

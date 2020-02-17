@@ -44,6 +44,10 @@
     name: "mesos-slave"
   when: ansible_hostname == "worker"
 
+- name: Start Mesos Zookeeper Service
+  service:
+    name: "zookeeper"
+
 - name: Set Mesos Conf at Spark
   blockinfile:
     block: |
@@ -56,13 +60,8 @@
     create: yes
     state: present
 
-- name: test mesos message
-  debug:
-    msg: "Por favor ejecute lo siguiente (como sparkuser):
-          mesos-master.sh —ip={{ spark_master_ip }}:5050 --work_dir=/tmp/mesos (en el nodo master)
-          mesos-slave.sh --master={{ spark_master_ip }}:5050 --work_dir=/tmp/mesos --no-systemd_enable_support (en el nodo esclavo)
-          compruebe que puede acceder a la interfaz de Mesos en http://{{ spark_master_ip }}:5050
-    y por último ejecute lo siguiente para probar el funcionamiento:
-          {{ spark_install_dir }}/spark-{{ spark_version }}/bin/spark-submit --master mesos://{{ spark_master_ip }}:5050 /tmp/WordCount.jar hdfs://{{ spark_master_ip }}::8020/prueba/texto.txt hdfs://{{ spark_master_ip }}:8020/prueba/resultadoMesos"
+- include: test_app.yml
+  when: ansible_hostname == "master" and mesos_test_app == true
+
 
 # vim: ff=unix:ai:et:sw=2:ts=2:

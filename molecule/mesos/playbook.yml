@@ -1,5 +1,5 @@
 ---
-- name: Set worker
+- name: Install Spark at Worker
   hosts: worker
   vars_files:
     - spark_conf.yml
@@ -19,7 +19,7 @@
       spark_user_password: "{{ spark_worker_user_pwd }}"
       spark_node_ip: "{{ spark_worker_ip }}"
 
-- name: Set master
+- name: Install Spark at Master
   hosts: master
   vars_files:
     - spark_conf.yml
@@ -39,7 +39,7 @@
       spark_user_password: "{{ spark_master_user_pwd }}"
       spark_node_ip: "{{ spark_master_ip }}"
 
-- name: Set worker
+- name: Install HDFS at Worker
   hosts: worker
   vars_files:
     - spark_conf.yml
@@ -57,7 +57,7 @@
     - role: ansible-hdfs
 
 
-- name: Set master
+- name: Install HDFS at Master
   hosts: master
   vars_files:
     - spark_conf.yml
@@ -74,7 +74,7 @@
         ssh_port: 22
     - role: ansible-hdfs
 
-- name: Set worker
+- name: Install Mesos at worker
   hosts: worker
   vars_files:
     - spark_conf.yml
@@ -87,7 +87,7 @@
       spark_user_password: "{{ spark_worker_user_pwd }}"
       spark_node_ip: "{{ spark_worker_ip }}"
 
-- name: Set master
+- name: Install Mesos at Master
   hosts: master
   vars_files:
     - spark_conf.yml

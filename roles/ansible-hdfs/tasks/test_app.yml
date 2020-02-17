@@ -21,13 +21,37 @@
 - name: Copy WordCount library if test is selected
   copy:
     src: "wordCount_2.0.2.jar"
-    dest: "/tmp"
+    dest: "/tmp/WordCount.jar"
     owner: "{{ spark_master_user }}"
     group: "{{ spark_master_user }}"
 
+- name: Copy texttxt example file
+  copy:
+    src: "texto.txt"
+    dest: "/tmp/"
+    owner: "{{ hadoop_user }}"
+    group: "{{ hadoop_user }}"
+
+- name: Create hdfs folder with Standalone spark
+  shell: |
+    {{ hadoop_install_dir }}/bin/hdfs dfsadmin –safemode leave
+    {{ hadoop_install_dir }}/bin/hdfs dfs –rm –R /prueba
+    {{ hadoop_install_dir }}/bin/hdfs dfs –mkdir /prueba
+    {{ hadoop_install_dir }}/bin/hdfs dfs -put /tmp/texto.txt /prueba/texto.txt
+  become: yes
+  become_user: "{{ hadoop_user }}"
+  ignore_errors: yes
+
+- name: execute wordcount jar
+  shell: |
+    {{ spark_install_dir }}/spark-{{ spark_version }}/bin/spark-submit --class WordCount --master mesos://{{ spark_master_ip }}:7077 /tmp/WordCount.jar hdfs://{{ spark_master_ip }}::8020/prueba/texto.txt hdfs://{{ spark_master_ip }}:8020/prueba/resultadoMesos
+  become: yes
+  become_user: "{{ spark_master_user }}"
+  ignore_errors: yes
+
 - name: test app message
   debug:
-    msg: "Para probar la instalacion HDFS/spark ejecute: 
+    msg: "Para probar la instalacion HDFS/spark standalone ejecute: 
           su sparkuser {{ spark_install_dir }}/spark-{{ spark_version }}/bin/spark-submit --class WordCount --master spark://{{ spark_master_ip }}:7077 /tmp/wordCount_2.0.2.jar hdfs://{{ spark_master_ip }}:8020/prueba/texto.txt hdfs://{{ spark_master_ip }}:8020/prueba/resultadosMesos
     Acceder a las interfaces http://{{ spark_master_ip }}:8080 (Spark) y http://{{ spark_master_ip }}:50070 (HDFS) para comprobar que todo ha ido bien."
 
