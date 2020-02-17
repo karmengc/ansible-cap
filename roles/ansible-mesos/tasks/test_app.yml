@@ -3,10 +3,10 @@
 
 - name: Create hdfs folder
   shell: |
-    {{ hadoop_install_dir }}/bin/hdfs dfsadmin –safemode leave
-    {{ hadoop_install_dir }}/bin/hdfs dfs –rm –R /prueba
-    {{ hadoop_install_dir }}/bin/hdfs dfs –mkdir /prueba
-    {{ hadoop_install_dir }}/bin/hdfs dfs -put /tmp/texto.txt /prueba/texto.txt
+    {{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}/bin/hdfs dfsadmin –safemode leave
+    {{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}/bin/hdfs dfs –rm –R /prueba
+    {{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}/bin/hdfs dfs –mkdir /prueba
+    {{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}/bin/hdfs dfs -put /tmp/texto.txt /prueba/texto.txt
   become: yes
   become_user: "{{ hadoop_user }}"
   ignore_errors: yes
