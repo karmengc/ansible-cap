@@ -64,5 +64,5 @@ Para acceder individualmente a cada una de las máquinas una vez estén creadas 
 
 ```
 molecule login -h master --scenario-name=[default,hdfs,mesos]
-molecule login -h worker1 --scenario-name=[default,hdfs,mesos]
+molecule login -h worker --scenario-name=[default,hdfs,mesos]
 ```

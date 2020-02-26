@@ -1,12 +1,15 @@
 ---
 dependency:
-  name: galaxy
+  name: "galaxy"
 driver:
-  name: vagrant
+  name: "vagrant"
   provider:
-    name: virtualbox
-lint:
-  name: yamllint
+    name: "virtualbox"
+lint: |
+    set -e
+    yamllint .
+    ansible-lint
+    flake8
 platforms:
   - name: master
     box: centos77
@@ -23,9 +26,16 @@ provisioner:
   config_options:
     ssh_connection:
       pipelining: true
-  lint:
-    name: ansible-lint
+  lint: |
+    set -e
+    yamllint .
+    ansible-lint
+    flake8
+    name: "ansible-lint"
 verifier:
-  name: testinfra
-  lint:
-    name: flake8
+  name: "testinfra"
+  lint: |
+    set -e
+    yamllint .
+    ansible-lint
+    flake8

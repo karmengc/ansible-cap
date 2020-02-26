@@ -18,6 +18,10 @@
 
 <configuration>
     <property>
+        <name>dfs.permissions.enabled</name>
+        <value>false</value>
+    </property>
+    <property>
         <name>dfs.namenode.name.dir</name>
         <value>file:{{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}/hadoop_data/hdfs/namenode</value>
     </property>

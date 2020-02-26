@@ -49,7 +49,7 @@
   roles:
     - role: ansible-ssh-copy-id
       vars:
-        hostname: "{{ hadoop_worker_ip }}"
+        hostname: "{{ hadoop_master_ip }}"
         username: "{{ hadoop_user }}"
         password: "{{ hadoop_user_pwd }}"
         ssh_public_key: "/home/{{ hadoop_user }}/.ssh/id_rsa.pub"
@@ -67,7 +67,7 @@
   roles:
     - role: ansible-ssh-copy-id
       vars:
-        hostname: "{{ hadoop_master_ip }}"
+        hostname: "{{ hadoop_worker_ip }}"
         username: "{{ hadoop_user }}"
         password: "{{ hadoop_user_pwd }}"
         ssh_public_key: "/home/{{ hadoop_user }}/.ssh/id_rsa.pub"
