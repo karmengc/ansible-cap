@@ -1,0 +1,39 @@
+---
+- name: Install Spark at worker
+  hosts: worker
+  vars_files:
+    - spark_conf.yml
+  become: true
+  gather_facts: true
+  roles:
+    - role: ansible-ssh-copy-id
+      vars:
+        hostname: "{{ spark_master_ip }}"
+        username: "{{ spark_worker_user }}"
+        password: "{{ spark_worker_user_pwd }}"
+        ssh_public_key: "/home/{{ spark_worker_user }}/.ssh/id_rsa.pub"
+        ssh_port: 22
+    - role: ansible-spark
+      spark_user: "{{ spark_worker_user }}"
+      spark_user_password: "{{ spark_worker_user_pwd }}"
+      spark_node_ip: "{{ spark_worker_ip }}"
+
+- name: Install spark at master
+  hosts: master
+  vars_files:
+    - spark_conf.yml
+  become: true
+  gather_facts: true
+  roles:
+    - role: ansible-ssh-copy-id
+      vars:
+        hostname: "{{ spark_worker_ip }}"
+        username: "{{ spark_master_user }}"
+        password: "{{ spark_master_user_pwd }}"
+        ssh_public_key: "/home/{{ spark_master_user }}/.ssh/id_rsa.pub"
+        ssh_port: 22
+    - role: ansible-spark
+      spark_user: "{{ spark_master_user }}"
+      spark_user_password: "{{ spark_master_user_pwd }}"
+      spark_node_ip: "{{ spark_master_ip }}"
+

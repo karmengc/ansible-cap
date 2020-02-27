@@ -34,9 +34,9 @@
 
 - name: Create hdfs folder with Standalone spark
   shell: |
-    {{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}/bin/hdfs dfsadmin –safemode leave
-    {{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}/bin/hdfs dfs –rm –R /prueba
-    {{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}/bin/hdfs dfs –mkdir /prueba
+    {{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}/bin/hdfs dfsadmin -safemode leave
+    {{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}/bin/hdfs dfs -rm -R /prueba
+    {{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}/bin/hdfs dfs -mkdir /prueba
     {{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}/bin/hdfs dfs -put /tmp/texto.txt /prueba/texto.txt
   become: yes
   become_user: "{{ hadoop_user }}"
@@ -44,15 +44,27 @@
 
 - name: execute wordcount jar
   shell: |
-    {{ spark_install_dir }}/spark-{{ spark_version }}/bin/spark-submit --class WordCount --master mesos://{{ spark_master_ip }}:7077 /tmp/WordCount.jar hdfs://{{ spark_master_ip }}::8020/prueba/texto.txt hdfs://{{ spark_master_ip }}:8020/prueba/resultadoMesos
+    {{ spark_install_dir }}/spark-{{ spark_version }}/bin/spark-submit --class /tmp/WordCount.jar --master mesos://{{ spark_master_ip }}:7077 hdfs://{{ spark_master_ip }}::8020/prueba/texto.txt hdfs://{{ spark_master_ip }}:8020/prueba/resultadoMesos
   become: yes
   become_user: "{{ spark_master_user }}"
   ignore_errors: yes
 
-- name: test app message
+- name: test app message_1
   debug:
-    msg: "Para probar la instalacion HDFS/spark standalone ejecute: 
-          su sparkuser {{ spark_install_dir }}/spark-{{ spark_version }}/bin/spark-submit --class WordCount --master spark://{{ spark_master_ip }}:7077 /tmp/wordCount_2.0.2.jar hdfs://{{ spark_master_ip }}:8020/prueba/texto.txt hdfs://{{ spark_master_ip }}:8020/prueba/resultadosMesos
-    Acceder a las interfaces http://{{ spark_master_ip }}:8080 (Spark) y http://{{ spark_master_ip }}:50070 (HDFS) para comprobar que todo ha ido bien."
+    msg: "Para probar la instalacion HDFS/spark standalone ejecute:
+          Acceder a las interfaces http://{{ spark_master_ip }}:8080 (Spark) y
+          http://{{ spark_master_ip }}:50070 (HDFS) para comprobar que todo ha ido bien."
+
+- name: test app message_2
+  debug:
+    msg: "Loguearse con sparkuser y hacer: 
+          {{ spark_install_dir }}/spark-{{ spark_version }}/bin/spark-submit --class wordCount /tmp/WordCount.jar --master spark://{{ spark_master_ip }}:7077  hdfs://{{ spark_master_ip }}:8020/prueba/texto.txt hdfs://{{ spark_master_ip }}:8020/prueba/resultadosMesos"
+
+- name: test app message_3
+  debug:
+    msg: "Probar los siguientes comandos:
+          {{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}/bin/hdfs dfs -ls /prueba
+          {{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}/bin/hdfs dfs -get /prueba/texto.txt /home/usuario
+          {{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}/bin/hdfs dfs -chmod 777 /prueba"
 
 # vim: ff=unix:ai:et:sw=2:ts=2:
