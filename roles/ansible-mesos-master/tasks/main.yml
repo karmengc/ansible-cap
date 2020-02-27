@@ -1,0 +1,35 @@
+---
+# Here we are using the debian package if debian
+- debug:
+        var=ansible_all_ipv4_addresses[1]
+
+- name: Set Mesos Conf at Spark
+  blockinfile:
+    block: |
+      export MESOS_NATIVE_JAVA_LIBRARY=/usr/local/lib/libmesos.so
+      export SPARK_EXECUTOR_URI=/tmp/spark-{{ spark_version }}.tgz
+    dest: "{{ spark_install_dir }}/spark-{{ spark_version }}/conf/spark-env.sh"
+    owner: "{{ spark_master_user }}"
+    group: "{{ spark_master_user }}"
+    insertafter: 'EOF'
+    create: yes
+    state: present
+
+- name: Stop Spark Standalone
+  shell: |
+    {{ spark_install_dir }}/spark-{{ spark_version }}/sbin/stop-all.sh
+  become: yes
+  become_user: "{{ spark_master_user }}"
+
+- include_vars: "{{ ansible_os_family }}.yml"
+
+- include: common.yml
+
+# Here we are using the debian package if debian
+- include: Debian.yml
+  when: ansible_os_family == "Debian"
+
+- include: RedHat.yml
+  when: ansible_os_family == "RedHat"
+
+- include: mesos.yml tags=configuration

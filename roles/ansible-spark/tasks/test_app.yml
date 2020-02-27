@@ -23,7 +23,7 @@
   debug:
     msg: "No es posible ejecutar la aplicación de test desde Ansible, por favor, acceda a la máquina máster y ejecute
           en el nodo master desde el directorio {{ spark_install_dir }}/spark-{{ spark_version }} 
-          como el usuario {{ spark_user_master }} lo siguiente
+          como el usuario {{ spark_master_user }} lo siguiente
           bin/spark-submit --master spark://{{ spark_master_ip }}:7077 --class org.apache.spark.examples.mllib.KMeansExample {{ spark_install_dir }}/spark-{{ spark_version }}/examples/jars/spark-examples_2.11-2.2.0.jar"
 
 - name: restart instructions

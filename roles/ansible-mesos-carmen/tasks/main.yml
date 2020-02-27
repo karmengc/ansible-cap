@@ -34,24 +34,11 @@
         #- libsvn-devel
     state: present
 
-- name: Start Mesos service at master
-  service:
-    name: "mesos-master"
-  when: ansible_hostname == "master"
-
-- name: Start Mesos service at slave
-  service:
-    name: "mesos-slave"
-  when: ansible_hostname == "worker"
-
-- name: Start Mesos Zookeeper Service
-  service:
-    name: "zookeeper"
 
 - name: Set Mesos Conf at Spark
   blockinfile:
     block: |
-      export MESOS_NATIVE_JAVA_LIBRARY=/opt/mesos/build/src/.libs/libmesos.so
+      export MESOS_NATIVE_JAVA_LIBRARY=/usr/local/lib/libmesos.so
       export SPARK_EXECUTOR_URI=/tmp/spark-{{ spark_version }}.tgz
     dest: "{{ spark_install_dir }}/spark-{{ spark_version }}/conf/spark-env.sh"
     owner: "{{ spark_user }}"
@@ -59,6 +46,23 @@
     insertafter: 'EOF'
     create: yes
     state: present
+
+- name: Start Mesos service at master
+  service:
+    name: "mesos-master"
+    state: "started"
+  when: ansible_hostname == "master"
+
+- name: Start Mesos service at slave
+  service:
+    name: "mesos-slave"
+    state: "started"
+  when: ansible_hostname == "worker"
+
+- name: Start Mesos Zookeeper Service
+  service:
+    name: "zookeeper"
+    state: "started"
 
 - include: test_app.yml
   when: ansible_hostname == "master" and mesos_test_app == true

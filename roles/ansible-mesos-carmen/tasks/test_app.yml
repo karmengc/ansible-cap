@@ -1,0 +1,29 @@
+---
+
+#Esto ya se hace en el test de hdfs
+#- name: Create hdfs folder
+#  shell: |
+#    {{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}/bin/hdfs dfsadmin –safemode leave
+#    {{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}/bin/hdfs dfs –rm –R /prueba
+#    {{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}/bin/hdfs dfs –mkdir /prueba
+#    {{ hadoop_install_dir }}/hadoop-{{ hadoop_version }}/bin/hdfs dfs -put /tmp/texto.txt /prueba/texto.txt
+#  become: yes
+#  become_user: "{{ hadoop_user }}"
+#  ignore_errors: yes
+#
+#Esto no funciona pero mejor ejecutarlo desde la máquina
+#- name: execute wordcount jar
+#  shell: |
+#    {{ spark_install_dir }}/spark-{{ spark_version }}/bin/spark-submit --class WordCount --master mesos://{{ spark_master_ip }}:5050 /tmp/WordCount.jar hdfs://{{ spark_master_ip }}::8020/prueba/texto.txt hdfs://{{ spark_master_ip }}:8020/prueba/resultadoMesos
+#  become: yes
+#  become_user: "{{ spark_user }}"
+#  ignore_errors: yes
+
+
+- name: test mesos message
+  debug:
+    msg: "Compruebe que puede acceder a la interfaz de Mesos en http://{{ spark_master_ip }}:5050
+          y por último ejecute lo siguiente para probar el funcionamiento:
+          {{ spark_install_dir }}/spark-{{ spark_version }}/bin/spark-submit --class wordCount --master mesos://{{ spark_master_ip }}:5050 /tmp/WordCount.jar hdfs://{{ spark_master_ip }}::8020/prueba/texto.txt hdfs://{{ spark_master_ip }}:8020/prueba/resultadoMesos"
+
+  # vim: ff=unix:ai:et:sw=2:ts=2:

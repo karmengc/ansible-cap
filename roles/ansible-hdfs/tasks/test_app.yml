@@ -42,12 +42,13 @@
   become_user: "{{ hadoop_user }}"
   ignore_errors: yes
 
-- name: execute wordcount jar
-  shell: |
-    {{ spark_install_dir }}/spark-{{ spark_version }}/bin/spark-submit --class /tmp/WordCount.jar --master mesos://{{ spark_master_ip }}:7077 hdfs://{{ spark_master_ip }}::8020/prueba/texto.txt hdfs://{{ spark_master_ip }}:8020/prueba/resultadoMesos
-  become: yes
-  become_user: "{{ spark_master_user }}"
-  ignore_errors: yes
+  #Esta parte mejor ejecutarla directamente en la máquina para ver la salida
+  #- name: execute wordcount jar
+  #  shell: |
+  #    {{ spark_install_dir }}/spark-{{ spark_version }}/bin/spark-submit --class /tmp/WordCount.jar --master mesos://{{ spark_master_ip }}:7077 hdfs://{{ spark_master_ip }}::8020/prueba/texto.txt hdfs://{{ spark_master_ip }}:8020/prueba/resultadoMesos
+  #  become: yes
+  #  become_user: "{{ spark_master_user }}"
+  #  ignore_errors: yes
 
 - name: test app message_1
   debug:

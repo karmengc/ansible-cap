@@ -18,6 +18,7 @@
       spark_user: "{{ spark_worker_user }}"
       spark_user_password: "{{ spark_worker_user_pwd }}"
       spark_node_ip: "{{ spark_worker_ip }}"
+  tags: install_spark
 
 - name: Install Spark at Master
   hosts: master
@@ -38,6 +39,7 @@
       spark_user: "{{ spark_master_user }}"
       spark_user_password: "{{ spark_master_user_pwd }}"
       spark_node_ip: "{{ spark_master_ip }}"
+  tags: install_spark
 
 - name: Install HDFS at Worker
   hosts: worker
@@ -54,8 +56,15 @@
         password: "{{ hadoop_user_pwd }}"
         ssh_public_key: "/home/{{ hadoop_user }}/.ssh/id_rsa.pub"
         ssh_port: 22
+    - role: ansible-ssh-copy-id
+      vars:
+        hostname: "{{ hadoop_worker_ip }}"
+        username: "{{ hadoop_user }}"
+        password: "{{ hadoop_user_pwd }}"
+        ssh_public_key: "/home/{{ hadoop_user }}/.ssh/id_rsa.pub"
+        ssh_port: 22
     - role: ansible-hdfs
-
+  tags: install_hdfs
 
 - name: Install HDFS at Master
   hosts: master
@@ -72,32 +81,87 @@
         password: "{{ hadoop_user_pwd }}"
         ssh_public_key: "/home/{{ hadoop_user }}/.ssh/id_rsa.pub"
         ssh_port: 22
+    - role: ansible-ssh-copy-id
+      vars:
+        hostname: "{{ hadoop_master_ip }}"
+        username: "{{ hadoop_user }}"
+        password: "{{ hadoop_user_pwd }}"
+        ssh_public_key: "/home/{{ hadoop_user }}/.ssh/id_rsa.pub"
+        ssh_port: 22
     - role: ansible-hdfs
+  tags: install_hdfs
+
+      #- name: Install Mesos at worker
+      #  hosts: worker
+      #  vars_files:
+      #    - spark_conf.yml
+      #    - hadoop_conf.yml
+      #  become: true
+      #  gather_facts: true
+      #  roles:
+      #    - role: ansible-mesos-carmen
+      #      spark_user: "{{ spark_worker_user }}"
+      #      spark_user_password: "{{ spark_worker_user_pwd }}"
+      #      spark_node_ip: "{{ spark_worker_ip }}"
+      #
+      #- name: Install Mesos at Master
+      #  hosts: master
+      #  vars_files:
+      #    - spark_conf.yml
+      #    - hadoop_conf.yml
+      #  become: true
+      #  gather_facts: true
+      #  roles:
+      #    - role: ansible-mesos-carmen
+      #      spark_user: "{{ spark_master_user }}"
+      #      spark_user_password: "{{ spark_master_user_pwd }}"
+      #      spark_node_ip: "{{ spark_worker_ip }}"
+
 
 - name: Install Mesos at worker
   hosts: worker
   vars_files:
+    - mesos_conf.yml
     - spark_conf.yml
     - hadoop_conf.yml
   become: true
   gather_facts: true
   roles:
-    - role: ansible-mesos
-      spark_user: "{{ spark_worker_user }}"
-      spark_user_password: "{{ spark_worker_user_pwd }}"
-      spark_node_ip: "{{ spark_worker_ip }}"
+    - role: ansible-mesos-master
+      mesos_install_mode: "slave"
 
 - name: Install Mesos at Master
   hosts: master
   vars_files:
+    - mesos_conf.yml
     - spark_conf.yml
     - hadoop_conf.yml
   become: true
   gather_facts: true
   roles:
-    - role: ansible-mesos
-      spark_user: "{{ spark_master_user }}"
-      spark_user_password: "{{ spark_master_user_pwd }}"
-      spark_node_ip: "{{ spark_worker_ip }}"
+    - role: ansible-mesos-master
+      mesos_install_mode: "master"
 
+- name: Install Zookeeper at worker
+  hosts: worker
+  vars_files:
+    - mesos_conf.yml
+    - spark_conf.yml
+    - hadoop_conf.yml
+    - zoo_conf.yml
+  become: true
+  gather_facts: true
+  roles:
+    - role: ansible-zookeeper-master
 
+- name: Install Zookeeper at Master
+  hosts: master
+  vars_files:
+    - mesos_conf.yml
+    - spark_conf.yml
+    - hadoop_conf.yml
+    - zoo_conf.yml
+  become: true
+  gather_facts: true
+  roles:
+    - role: ansible-zookeeper-master
